@@ -1,6 +1,6 @@
 from enum import Enum
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, List
 import random
 
 
@@ -52,11 +52,15 @@ class Hand:
         self._score += card.value
         if card.value == 1 and self.score <= 11:
             self._score += 10
-        print('Score: {}'.format(self._score))
+        # print('Score: {}'.format(self._score))
 
     @property
     def score(self) -> int:
         return self._score
+    
+    @property
+    def cards(self) -> List[Card]:
+        return self._cards
 
 class Player(ABC):
     def __init__(self, hand: Hand) -> None:
@@ -121,7 +125,6 @@ class Dealer(Player):
         else:
             raise ValueError("input should be a positive integer smaller than 22.")
     
-    
     def make_move(self) -> bool:
         return self._get_hand().score < self._target_score
     
@@ -134,12 +137,17 @@ class Game:
 
     def give_initial_cards(self):
         self._customer.hand.add_card(self._deck.draw())
+        print(self._customer.hand.score)
         self._customer.hand.add_card(self._deck.draw())
+        print(self._customer.hand.score)
         self._dealer.hand.add_card(self._deck.draw())
+        print(self._dealer.hand.cards[0])
         self._dealer.hand.add_card(self._deck.draw())
 
     def give_card(self, player: Player):
         player.hand.add_card(self._deck.draw())
+        if isinstance(player, CustomerPlayer):
+            print(self._customer.hand.score)
 
     def play_round(self, bet_amount: Union[int, float]):
         self._customer.place_bet(bet_amount)
@@ -158,7 +166,7 @@ class Game:
 
         while self._dealer.hand.score < self._customer.hand.score:
             self.give_card(self._dealer)
-        
+        print('final dealer score: ', self._dealer.hand.score)
         if self._dealer.hand.score > 22:
             self._customer.receive_winnings(bet_amount * 2)
             print('Player wins {}$'.format(bet_amount))
@@ -189,7 +197,7 @@ class Game:
         return bet_amount
     
     def play(self):
-        while True:
+        while self._customer.balance:
             play_round = input('Do you want to play Blackjack? [y/n] ')
             if play_round.lower() == 'y':
                 bet_amount = self.place_bet()
