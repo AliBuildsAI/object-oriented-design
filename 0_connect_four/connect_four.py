@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 
 class GridPosition(Enum):
@@ -147,19 +147,18 @@ class Game:
                 self._grid.n_cols))
     return (row_idx, col_idx)
 
-  def play_one_match(self) -> Player:
+  def play_one_match(self) -> Optional[Player]:
     for _ in range(self._max_moves):
       for player in self._players:
         row_idx, col_idx = self.play_move(player)
         if self._grid.is_connected(player.color, self._connect_to_win, row_idx,
                                    col_idx):
           self._score[player.name] += 1
-          is_game_finished = True
           return player
+    return None
 
   def play_game(self) -> None:
     max_score = 0
-    winner = None
     while max_score < self._target_score:
       round_winner = self.play_one_match()
       print('round winner: {}'.format(round_winner.name))
