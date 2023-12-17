@@ -135,12 +135,16 @@ class Game:
   def play_move(self, player: Player) -> Tuple[int, int]:
     while True:
       self._grid.print_board()
-      col_idx = int(
-          input("Enter column idx from 0 to {} to add your piece".format(
-              self._grid.n_cols)))
-      row_idx = self._grid.place_piece(col_idx, player.color)
-      if row_idx != -1:
-        break
+      try:
+        col_idx = int(
+            input("Enter column idx from 0 to {} to add your piece".format(
+                self._grid.n_cols)))
+        row_idx = self._grid.place_piece(col_idx, player.color)
+        if row_idx != -1:
+          break
+      except ValueError:
+        print("Input is invalid, please enter column idx from 0 to {} to add your piece".format(
+                self._grid.n_cols))
     return (row_idx, col_idx)
 
   def play_one_match(self) -> Player:
