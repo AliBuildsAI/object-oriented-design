@@ -82,21 +82,20 @@ class BankSystem:
 
     def open_account(self, customer_name: str, teller_id: int, init_deposit: float = 0):
         customer_id = len(self._accounts)
-        account = BankAccount(customer_id, init_deposit), 
+        account = BankAccount(customer_id, init_deposit)
         transaction = OpenAccount(customer_id, teller_id, init_deposit)
         self._transactions.append(transaction)
         self._accounts.append(account)
         return customer_id
 
     def deposit(self, customer_id: int, teller_id: int, amount: float):
-        account = self.get_account(customer_id)[0]
-        print(account)
+        account = self.get_account(customer_id)
         account.deposit(amount)
         transaction = Deposit(customer_id, teller_id, amount)
         self._transactions.append(transaction)
 
     def withdraw(self, customer_id: int, teller_id: int, amount: float):
-        account = self.get_account(customer_id)[0]
+        account = self.get_account(customer_id)
         if account.balance >= amount:
             account.withdraw(amount)
         else:
@@ -116,7 +115,6 @@ class BankSystem:
         return self._accounts[customer_id]
     
 
-                 
 class BankBranch:
     def __init__(self, address: str, total_cash: float, bank_system: BankSystem, tellers: List[Teller] = []) -> None:
         self._total_cash = total_cash
