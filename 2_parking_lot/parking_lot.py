@@ -77,7 +77,7 @@ class ParkingFloor:
     def remove_vehicle(self, vehicle: Vehicle) -> None:
         left, right = self._occupancy_map[vehicle]
         for i in range(left, right+1):
-            self._is_occupied = False
+            self._is_occupied[i] = False
         del self._occupancy_map[vehicle]
 
     @property
@@ -120,7 +120,7 @@ class ParkingPaymentSystem:
         if driver.driver_id not in self._time_parked:
             return False
         current_hour = datetime.datetime.now().hour
-        price = self._hourly_rate * (current_hour - self._time_parked[driver.driver_id])
+        price = self._hourly_rate * driver.vehicle.size * (current_hour - self._time_parked[driver.driver_id] + 1)
         driver.charge(price)
         del self._time_parked[driver.driver_id]
         return True
