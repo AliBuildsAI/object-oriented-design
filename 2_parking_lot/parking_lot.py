@@ -75,7 +75,10 @@ class ParkingFloor:
         return False
 
     def remove_vehicle(self, vehicle: Vehicle) -> None:
+        if vehicle not in self._occupancy_map:
+            raise ValueError("Vehicle not in the Floor!")
         left, right = self._occupancy_map[vehicle]
+
         for i in range(left, right+1):
             self._is_occupied[i] = False
         del self._occupancy_map[vehicle]
@@ -89,6 +92,7 @@ class ParkingGarage:
         self._num_floors = num_floors
         self._parking_garage = [ParkingFloor(capacity_per_floor) for _ in range(num_floors)]
         self._vehicle_floor_map = {}
+    
     def park_vehicle(self, vehicle: Vehicle) -> bool:
         for i in range(len(self._parking_garage)):
             if self._parking_garage[i].park_vehicle(vehicle):
@@ -97,6 +101,8 @@ class ParkingGarage:
         return False
 
     def remove_vehicle(self, vehicle: Vehicle):
+        if vehicle not in self._vehicle_floor_map:
+            raise ValueError("Vehicle not found in the garage!")
         floor_idx = self._vehicle_floor_map[vehicle]
         self._parking_garage[floor_idx].remove_vehicle(vehicle)
         del self._vehicle_floor_map[vehicle]
@@ -119,11 +125,17 @@ class ParkingPaymentSystem:
     def remove_vehicle(self, driver: Driver) -> bool:
         if driver.driver_id not in self._time_parked:
             return False
-        current_hour = datetime.datetime.now().hour
-        price = self._hourly_rate * driver.vehicle.size * (current_hour - self._time_parked[driver.driver_id] + 1)
-        driver.charge(price)
-        del self._time_parked[driver.driver_id]
-        return True
+        try:
+            self._parking_garage.remove_vehicle(driver.vehicle)
+            current_hour = datetime.datetime.now().hour
+            price = self._hourly_rate * driver.vehicle.size * (current_hour - self._time_parked[driver.driver_id] + 1)
+            driver.charge(price)
+            
+            del self._time_parked[driver.driver_id]
+            return True
+        except ValueError as e:
+            print("Error: {}".format(e))
+            return False
 
 if __name__ == '__main__':
     parking_garage = ParkingGarage(3, 2)
@@ -131,11 +143,13 @@ if __name__ == '__main__':
     driver1 = Driver(Car(), 1)
     driver2 = Driver(Limo(), 2)
     driver3 = Driver(Truck(), 3)
+    driver4 = Driver(Truck(), 4)
 
     print(parking_payment_system.park_vehicle(driver1))      # true
     print(parking_payment_system.park_vehicle(driver2))      # true
     print(parking_payment_system.park_vehicle(driver3))      # false
 
     print(parking_payment_system.remove_vehicle(driver1))    # true
+    print(parking_payment_system.remove_vehicle(driver4)) 
     print(parking_payment_system.remove_vehicle(driver2))    # true
     print(parking_payment_system.remove_vehicle(driver3))    # false
